@@ -38,10 +38,12 @@ type GameState int
 
 const (
     StateMenu GameState = iota
+    StateSelectDifficulty
     StatePlaying
     StateGameOver
     StateScoreboard
 )
+
 
 type Game struct {
     snake         *Snake
@@ -53,6 +55,7 @@ type Game struct {
     speed         float64
     state         GameState
     highScores    []int
+    speedIncrement float64
 }
 
 
@@ -72,6 +75,24 @@ func (g *Game) DrawMenu(screen *ebiten.Image) {
     ebitenutil.DebugPrintAt(screen, menuText1, x1, y1)
     ebitenutil.DebugPrintAt(screen, menuText2, x2, y2)
     ebitenutil.DebugPrintAt(screen, menuText3, x3, y3)
+}
+
+func (g *Game) DrawSelectDifficulty(screen *ebiten.Image) {
+    difficultyText1 := "Press '1' for Easy"
+    difficultyText2 := "Press '2' for Medium"
+    difficultyText3 := "Press '3' for Hard"
+    textWidth1 := len(difficultyText1) * 20 + 70
+    textWidth2 := len(difficultyText2) * 20 + 40
+    textWidth3 := len(difficultyText3) * 20 + 70
+    x1 := (screenWidth*2 - textWidth1) / 2
+    x2 := (screenWidth*2 - textWidth2) / 2
+    x3 := (screenWidth*2 - textWidth3) / 2
+    y1 := screenHeight*2 / 7
+    y2 := screenHeight*2 / 5
+    y3 := screenHeight*2 / 4
+    ebitenutil.DebugPrintAt(screen, difficultyText1, x1, y1)
+    ebitenutil.DebugPrintAt(screen, difficultyText2, x2, y2)
+    ebitenutil.DebugPrintAt(screen, difficultyText3, x3, y3)
 }
 
 func (g *Game) DrawScoreboard(screen *ebiten.Image) {
@@ -154,15 +175,26 @@ func (g *Game) Update() error {
     switch g.state {
     case StateMenu:
         if inpututil.IsKeyJustPressed(ebiten.KeyS) {
-            g.startGame()
+            g.state = StateSelectDifficulty
         } else if inpututil.IsKeyJustPressed(ebiten.KeyV) {
             g.state = StateScoreboard
+        }
+    case StateSelectDifficulty:
+        if inpututil.IsKeyJustPressed(ebiten.Key1) {
+            log.Println("Easy selected")
+            g.startGame(10, 1)
+        } else if inpututil.IsKeyJustPressed(ebiten.Key2) {
+            log.Println("Medium selected")
+            g.startGame(7, 3)
+        } else if inpututil.IsKeyJustPressed(ebiten.Key3) {
+            log.Println("Hard selected")
+            g.startGame(5, 5)
         }
     case StatePlaying:
         g.updateGame()
     case StateGameOver:
         if inpututil.IsKeyJustPressed(ebiten.KeyR) {
-            g.restart()
+            g.state = StateSelectDifficulty
         }
     case StateScoreboard:
         if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
@@ -173,12 +205,12 @@ func (g *Game) Update() error {
 }
 
 
-
-func (g *Game) startGame() {
+func (g *Game) startGame(speed, increment float64) {
     g.snake = NewSnake()
     g.food = NewFood()
     g.score = 0
-    g.speed = 10
+    g.speed = speed
+    g.speedIncrement = increment
     g.gameOver = false
     g.state = StatePlaying
 }
@@ -226,7 +258,7 @@ func (g *Game) updateGame() {
     if g.snake.Body[0].X == g.food.Position.X && g.snake.Body[0].Y == g.food.Position.Y {
         g.snake.GrowCounter += 2
         g.score++
-        g.speed -= 0.5
+        g.speed -= g.speedIncrement
         g.food = NewFood()
     }
 }
@@ -253,8 +285,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
     switch g.state {
     case StateMenu:
         g.DrawMenu(screen)
+    case StateSelectDifficulty:
+        g.DrawSelectDifficulty(screen)
     case StatePlaying:
-        g.drawGame(screen)	
+        g.drawGame(screen)
 	case StateGameOver:
         g.drawGame(screen)
         gameOverText1 := "Game Over. Press 'R' to restart."
