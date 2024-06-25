@@ -121,6 +121,7 @@ func (g *Game) updateGame() {
             g.highScores = g.highScores[:10]
         }
         g.saveHighScores()
+        playSound(gameOverPlayer)
         return
     }
 
@@ -129,6 +130,7 @@ func (g *Game) updateGame() {
         g.score++
         g.speed -= g.speedIncrement
         g.food = NewFood()
+        playSound(eatPlayer)
     }
 }
 
