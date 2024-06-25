@@ -99,14 +99,14 @@ func (g *Game) DrawScoreboard(screen *ebiten.Image) {
     scoreboardText := "High Scores"
     textWidth := len(scoreboardText) * 20 + 70
     x := (screenWidth*2 - textWidth) / 2 - 55
-    y := screenHeight*2 / 5
+    y := screenHeight*2 / 10
     ebitenutil.DebugPrintAt(screen, scoreboardText, x, y)
 
     for i, score := range g.highScores {
         scoreText := fmt.Sprintf("%d. %d", i+1, score)
         textWidth := len(scoreText) * 20 + 70
         x := (screenWidth*2 - textWidth) / 2 - 105
-        y := screenHeight*2/4 + 20*(i+1)
+        y := screenHeight*2/8 + 20*(i+1)
         ebitenutil.DebugPrintAt(screen, scoreText, x, y)
     }
 }
