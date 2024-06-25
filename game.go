@@ -1,15 +1,12 @@
 package main
 
 import (
-	"encoding/json"
     "fmt"
-	"log"
-	"os"
     "github.com/hajimehoshi/ebiten/v2"
     "github.com/hajimehoshi/ebiten/v2/ebitenutil"
     "github.com/hajimehoshi/ebiten/v2/inpututil"
     "image/color"
-    "math/rand"
+    "log"
     "sort"
 )
 
@@ -18,21 +15,6 @@ const (
     screenHeight = 240
     tileSize     = 5
 )
-
-type Point struct {
-    X int
-    Y int
-}
-
-type Snake struct {
-    Body        []Point
-    Direction   Point
-    GrowCounter int
-}
-
-type Food struct {
-    Position Point
-}
 
 type GameState int
 
@@ -44,122 +26,17 @@ const (
     StateScoreboard
 )
 
-
 type Game struct {
-    snake         *Snake
-    food          *Food
-    score         int
-    gameOver      bool
-    ticks         int
-    updateCounter float64
-    speed         float64
-    state         GameState
-    highScores    []int
+    snake          *Snake
+    food           *Food
+    score          int
+    gameOver       bool
+    ticks          int
+    updateCounter  float64
+    speed          float64
+    state          GameState
+    highScores     []int
     speedIncrement float64
-}
-
-
-func (g *Game) DrawMenu(screen *ebiten.Image) {
-    menuText1 := "Press 'S' to Start"
-    menuText2 := "Press 'V' to View High Scores"
-    menuText3 := "Press 'E' to Exit"
-    textWidth1 := len(menuText1) * 20 + 70
-    textWidth2 := len(menuText2) * 20 - 80
-    textWidth3 := len(menuText3) * 20 + 85
-    x1 := (screenWidth*2 - textWidth1) / 2
-    x2 := (screenWidth*2 - textWidth2) / 2
-    x3 := (screenWidth*2 - textWidth3) / 2
-    y1 := screenHeight*2/ 7
-    y2 := screenHeight*2/ 5
-    y3 := screenHeight*2/ 4
-    ebitenutil.DebugPrintAt(screen, menuText1, x1, y1)
-    ebitenutil.DebugPrintAt(screen, menuText2, x2, y2)
-    ebitenutil.DebugPrintAt(screen, menuText3, x3, y3)
-}
-
-func (g *Game) DrawSelectDifficulty(screen *ebiten.Image) {
-    difficultyText1 := "Press '1' for Easy"
-    difficultyText2 := "Press '2' for Medium"
-    difficultyText3 := "Press '3' for Hard"
-    textWidth1 := len(difficultyText1) * 20 + 70
-    textWidth2 := len(difficultyText2) * 20 + 40
-    textWidth3 := len(difficultyText3) * 20 + 70
-    x1 := (screenWidth*2 - textWidth1) / 2
-    x2 := (screenWidth*2 - textWidth2) / 2
-    x3 := (screenWidth*2 - textWidth3) / 2
-    y1 := screenHeight*2 / 7
-    y2 := screenHeight*2 / 5
-    y3 := screenHeight*2 / 4
-    ebitenutil.DebugPrintAt(screen, difficultyText1, x1, y1)
-    ebitenutil.DebugPrintAt(screen, difficultyText2, x2, y2)
-    ebitenutil.DebugPrintAt(screen, difficultyText3, x3, y3)
-}
-
-func (g *Game) DrawScoreboard(screen *ebiten.Image) {
-    scoreboardText := "High Scores"
-    textWidth := len(scoreboardText) * 20 + 70
-    x := (screenWidth*2 - textWidth) / 2 - 55
-    y := screenHeight*2 / 10
-    ebitenutil.DebugPrintAt(screen, scoreboardText, x, y)
-
-    for i, score := range g.highScores {
-        scoreText := fmt.Sprintf("%d. %d", i+1, score)
-        textWidth := len(scoreText) * 20 + 70
-        x := (screenWidth*2 - textWidth) / 2 - 105
-        y := screenHeight*2/8 + 20*(i+1)
-        ebitenutil.DebugPrintAt(screen, scoreText, x, y)
-    }
-}
-
-func (g *Game) saveHighScores() {
-    file, err := os.Create("highscores.json")
-    if err != nil {
-        log.Println("Error saving high scores:", err)
-        return
-    }
-    defer file.Close()
-
-    encoder := json.NewEncoder(file)
-    err = encoder.Encode(g.highScores)
-    if err != nil {
-        log.Println("Error encoding high scores:", err)
-    }
-}
-
-func (g *Game) loadHighScores() {
-    file, err := os.Open("highscores.json")
-    if err != nil {
-        if !os.IsNotExist(err) {
-            log.Println("Error loading high scores:", err)
-        }
-        return
-    }
-    defer file.Close()
-
-    decoder := json.NewDecoder(file)
-    err = decoder.Decode(&g.highScores)
-    if err != nil {
-        log.Println("Error decoding high scores:", err)
-    }
-}
-
-
-func NewSnake() *Snake {
-    return &Snake{
-        Body: []Point{
-            {X: screenWidth / tileSize / 2, Y: screenHeight / tileSize / 2},
-        },
-        Direction: Point{X: 1, Y: 0},
-    }
-}
-
-func NewFood() *Food {
-    return &Food{
-        Position: Point{
-            X: rand.Intn(screenWidth / tileSize),
-            Y: rand.Intn(screenHeight / tileSize),
-        },
-    }
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -204,7 +81,6 @@ func (g *Game) Update() error {
     return nil
 }
 
-
 func (g *Game) startGame(speed, increment float64) {
     g.snake = NewSnake()
     g.food = NewFood()
@@ -222,10 +98,8 @@ func (g *Game) updateGame() {
     }
     g.updateCounter = 0
 
-    // Update the snake's position
     g.snake.Move()
 
-    // Handle user input
     if ebiten.IsKeyPressed(ebiten.KeyLeft) && g.snake.Direction.X == 0 {
         g.snake.Direction = Point{X: -1, Y: 0}
     } else if ebiten.IsKeyPressed(ebiten.KeyRight) && g.snake.Direction.X == 0 {
@@ -236,25 +110,20 @@ func (g *Game) updateGame() {
         g.snake.Direction = Point{X: 0, Y: 1}
     }
 
-    // Check for collisions
     if g.collidesWithSnake() || g.collidesWithEdge() {
         g.gameOver = true
         g.state = StateGameOver
         g.highScores = append(g.highScores, g.score)
-        // Sort scores in descending order
         sort.Slice(g.highScores, func(i, j int) bool {
             return g.highScores[i] > g.highScores[j]
         })
-        // Keep only the top 10 scores
         if len(g.highScores) > 10 {
             g.highScores = g.highScores[:10]
         }
-        // Save high scores
         g.saveHighScores()
         return
     }
 
-    // Update food position if snake eats it
     if g.snake.Body[0].X == g.food.Position.X && g.snake.Body[0].Y == g.food.Position.Y {
         g.snake.GrowCounter += 2
         g.score++
@@ -262,7 +131,6 @@ func (g *Game) updateGame() {
         g.food = NewFood()
     }
 }
-
 
 func (g *Game) collidesWithSnake() bool {
     head := g.snake.Body[0]
@@ -289,7 +157,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
         g.DrawSelectDifficulty(screen)
     case StatePlaying:
         g.drawGame(screen)
-	case StateGameOver:
+    case StateGameOver:
         g.drawGame(screen)
         gameOverText1 := "Game Over. Press 'R' to restart."
         gameOverText2 := "Press 'E' to Exit."
@@ -307,17 +175,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) drawGame(screen *ebiten.Image) {
-    // Draw snake
     for _, segment := range g.snake.Body {
         x, y := segment.X*tileSize, segment.Y*tileSize
         ebitenutil.DrawRect(screen, float64(x), float64(y), tileSize, tileSize, color.White)
     }
 
-    // Draw food
     x, y := g.food.Position.X*tileSize, g.food.Position.Y*tileSize
     ebitenutil.DrawRect(screen, float64(x), float64(y), tileSize, tileSize, color.RGBA{R: 255, G: 0, B: 0, A: 255})
 
-    // Draw score
     text := fmt.Sprintf("Score: %d", g.score)
     ebitenutil.DebugPrint(screen, text)
 }
@@ -328,19 +193,5 @@ func (g *Game) restart() {
     g.score = 0
     g.speed = 10
     g.gameOver = false
-	g.state = StatePlaying
-}
-
-func (s *Snake) Move() {
-    newHead := Point{
-        X: s.Body[0].X + s.Direction.X,
-        Y: s.Body[0].Y + s.Direction.Y,
-    }
-    s.Body = append([]Point{newHead}, s.Body...)
-
-    if s.GrowCounter > 0 {
-        s.GrowCounter--
-    } else {
-        s.Body = s.Body[:len(s.Body)-1]
-    }
+    g.state = StatePlaying
 }
