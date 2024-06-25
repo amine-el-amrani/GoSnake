@@ -4,6 +4,7 @@ import (
 	"encoding/json"
     "fmt"
 	"log"
+	"os"
     "github.com/hajimehoshi/ebiten/v2"
     "github.com/hajimehoshi/ebiten/v2/ebitenutil"
     "github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -82,12 +83,45 @@ func (g *Game) DrawScoreboard(screen *ebiten.Image) {
 
     for i, score := range g.highScores {
         scoreText := fmt.Sprintf("%d. %d", i+1, score)
-        textWidth := len(scoreText) * 6
-        x := (screenWidth*2 - textWidth) / 2
+        textWidth := len(scoreText) * 20 + 70
+        x := (screenWidth*2 - textWidth) / 2 - 105
         y := screenHeight*2/4 + 20*(i+1)
         ebitenutil.DebugPrintAt(screen, scoreText, x, y)
     }
 }
+
+func (g *Game) saveHighScores() {
+    file, err := os.Create("highscores.json")
+    if err != nil {
+        log.Println("Error saving high scores:", err)
+        return
+    }
+    defer file.Close()
+
+    encoder := json.NewEncoder(file)
+    err = encoder.Encode(g.highScores)
+    if err != nil {
+        log.Println("Error encoding high scores:", err)
+    }
+}
+
+func (g *Game) loadHighScores() {
+    file, err := os.Open("highscores.json")
+    if err != nil {
+        if !os.IsNotExist(err) {
+            log.Println("Error loading high scores:", err)
+        }
+        return
+    }
+    defer file.Close()
+
+    decoder := json.NewDecoder(file)
+    err = decoder.Decode(&g.highScores)
+    if err != nil {
+        log.Println("Error decoding high scores:", err)
+    }
+}
+
 
 func NewSnake() *Snake {
     return &Snake{
@@ -183,6 +217,8 @@ func (g *Game) updateGame() {
         if len(g.highScores) > 10 {
             g.highScores = g.highScores[:10]
         }
+        // Save high scores
+        g.saveHighScores()
         return
     }
 

@@ -15,12 +15,16 @@ func main() {
         state:    StateMenu,
         highScores: []int{},
     }
+
+    game.loadHighScores()
+
     ebiten.SetWindowSize(screenWidth*2, screenHeight*2)
     ebiten.SetWindowTitle("Snake Game")
     if err := ebiten.RunGame(game); err != nil {
         if err.Error() != "quit" {
             log.Fatal(err)
         }
+        game.saveHighScores()
         log.Println("Game exited with quit signal.")
     }
 }
