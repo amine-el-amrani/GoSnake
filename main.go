@@ -16,6 +16,8 @@ func main() {
         highScores: []int{},
     }
 
+    initAudio()
+
     game.loadHighScores()
 
     ebiten.SetWindowSize(screenWidth*2, screenHeight*2)
