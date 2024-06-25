@@ -66,6 +66,10 @@ This project is a Snake game developed in Go using the Ebiten game library. The 
   - `3`: Hard difficulty
   - Arrow keys: Control the snake
   - `R`: Restart the game after game over
+- **Sound Effects**:
+  - Sound when eating food.
+  - Sound when losing the game.
+  - Background music during gameplay.
 
 ## Screenshots
 ### Main Menu
